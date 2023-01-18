@@ -1,5 +1,13 @@
 {% from "_includes/forms" import autosuggestField, lightswitchField %}
 
+{{ lightswitchField({
+    label: "Test mode?"|t('commerce'),
+    name: 'testMode',
+    instructions: 'If test mode is enabled you can use the test card numbers found <a href="https://www.paymentexpress.com/support-merchant-frequently-asked-questions-testing-details" target="_blank">here</a>',
+    on: gateway.testMode,
+    errors: gateway.getErrors('testMode'),
+}) }}
+
 <div class="field"><p class="warning">This Gateway (PxPay) currently only supports the Credit Card Payment Type "Purchase".</p></div>
 
 {{ autosuggestField({
@@ -22,7 +30,14 @@
     errors: gateway.getErrors('password')
 }) }}
 
-<div class="field"><p class="warning">If you wish to enable refunds you need to also have a PxPost account.</p></div>
+<div class="field"><p class="warning">If you wish to enable refunds you need to also have PxPost enabled on your merchant account.</p></div>
+
+{{ lightswitchField({
+    label: "Enable refunds?"|t('commerce'),
+    name: 'enableRefunds',
+    on: gateway.enableRefunds,
+    errors: gateway.getErrors('enableRefunds'),
+}) }}
 
 {{ autosuggestField({
     label: "PxPost Username"|t('commerce'),
@@ -42,19 +57,4 @@
     value: gateway.pxPostPassword,
     suggestEnvVars: true,
     errors: gateway.getErrors('pxPostPassword')
-}) }}
-
-{{ lightswitchField({
-    label: "Enable refunds?"|t('commerce'),
-    name: 'enableRefunds',
-    on: gateway.enableRefunds,
-    errors: gateway.getErrors('enableRefunds'),
-}) }}
-
-{{ lightswitchField({
-    label: "Test mode?"|t('commerce'),
-    name: 'testMode',
-    instructions: 'If test mode is enabled you can use the test card numbers found <a href="https://www.paymentexpress.com/support-merchant-frequently-asked-questions-testing-details" target="_blank">here</a>',
-    on: gateway.testMode,
-    errors: gateway.getErrors('testMode'),
 }) }}
