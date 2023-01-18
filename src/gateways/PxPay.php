@@ -59,6 +59,10 @@ class PxPay extends OffsiteGateway
      * @var bool
      */
     public $testMode;
+    /**
+     * @var bool
+     */
+    public $enableRefunds;
 
     // Public Methods
     // =========================================================================
@@ -89,7 +93,7 @@ class PxPay extends OffsiteGateway
 
     public function supportsRefund(): bool
     {
-        return true;
+        return $this->enableRefunds;
     }
 
     // Protected Methods
