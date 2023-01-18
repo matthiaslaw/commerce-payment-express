@@ -3,29 +3,51 @@
 <div class="field"><p class="warning">This Gateway (PxPay) currently only supports the Credit Card Payment Type "Purchase".</p></div>
 
 {{ autosuggestField({
-     label: "Username"|t('commerce'),
-     id: 'username',
-     class: 'ltr',
-     name: 'username',
-     value: gateway.username,
-     suggestEnvVars: true,
-     errors: gateway.getErrors('username')
- }) }}
+    label: "Username"|t('commerce'),
+    id: 'username',
+    class: 'ltr',
+    name: 'username',
+    value: gateway.username,
+    suggestEnvVars: true,
+    errors: gateway.getErrors('username')
+}) }}
 
-  {{ autosuggestField({
-     label: "Password"|t('commerce'),
-     id: 'password',
-     class: 'ltr',
-     name: 'password',
-     value: gateway.password,
-     suggestEnvVars: true,
-     errors: gateway.getErrors('password')
- }) }}
+{{ autosuggestField({
+    label: "Password"|t('commerce'),
+    id: 'password',
+    class: 'ltr',
+    name: 'password',
+    value: gateway.password,
+    suggestEnvVars: true,
+    errors: gateway.getErrors('password')
+}) }}
 
- {{ lightswitchField({
-     label: "Test mode?"|t('commerce'),
-     name: 'testMode',
-     instructions: 'If test mode is enabled you can use the test card numbers found <a href="https://www.paymentexpress.com/support-merchant-frequently-asked-questions-testing-details" target="_blank">here</a>',
-     on: gateway.testMode,
-     errors: gateway.getErrors('testMode'),
- }) }}
+<div class="field"><p class="warning">If you wish to enable refunds you need to also have a PxPost account.</p></div>
+
+{{ autosuggestField({
+    label: "PxPost Username"|t('commerce'),
+    id: 'pxPostUsername',
+    class: 'ltr',
+    name: 'pxPostUsername',
+    value: gateway.pxPostUsername,
+    suggestEnvVars: true,
+    errors: gateway.getErrors('pxPostUsername')
+}) }}
+
+{{ autosuggestField({
+    label: "PxPost Password"|t('commerce'),
+    id: 'pxPostPassword',
+    class: 'ltr',
+    name: 'pxPostPassword',
+    value: gateway.pxPostPassword,
+    suggestEnvVars: true,
+    errors: gateway.getErrors('pxPostPassword')
+}) }}
+
+{{ lightswitchField({
+    label: "Test mode?"|t('commerce'),
+    name: 'testMode',
+    instructions: 'If test mode is enabled you can use the test card numbers found <a href="https://www.paymentexpress.com/support-merchant-frequently-asked-questions-testing-details" target="_blank">here</a>',
+    on: gateway.testMode,
+    errors: gateway.getErrors('testMode'),
+}) }}

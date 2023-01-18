@@ -2,6 +2,7 @@
 
 namespace platocreative\paymentexpress\gateways;
 
+use craft\helpers\App;
 use platocreative\paymentexpress\models\RequestResponse;
 use platocreative\paymentexpress\events\CreateGatewayEvent;
 
@@ -14,7 +15,8 @@ use craft\commerce\omnipay\base\OffsiteGateway;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\Message\ResponseInterface;
 use Omnipay\Omnipay;
-use Omnipay\PaymentExpress\PxPayGateway as Gateway;
+use Omnipay\PaymentExpress\PxPayGateway;
+use Omnipay\PaymentExpress\PxPostGateway;
 use yii\base\NotSupportedException;
 
 /**
@@ -37,10 +39,18 @@ class PxPay extends OffsiteGateway
      * @var string
      */
     public $username;
-        /**
+    /**
      * @var string
      */
     public $password;
+    /**
+     * @var string
+     */
+    public $pxPostUsername;
+    /**
+     * @var string
+     */
+    public $pxPostPassword;
     /**
      * @var string
      */
@@ -48,11 +58,11 @@ class PxPay extends OffsiteGateway
     /**
      * @var bool
      */
-    public $testMode = false;
+    public $testMode;
 
     // Public Methods
     // =========================================================================
-    
+
     /**
      * @inheritdoc
      */
@@ -64,7 +74,7 @@ class PxPay extends OffsiteGateway
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml(): ?string
+    public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('payment-express-for-craft-commerce-2/gatewaySettings', ['gateway' => $this]);
     }
@@ -76,7 +86,12 @@ class PxPay extends OffsiteGateway
     {
         return false;
     }
-    
+
+    public function supportsRefund(): bool
+    {
+        return true;
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -86,26 +101,53 @@ class PxPay extends OffsiteGateway
     protected function createGateway(): AbstractGateway
     {
         /** @var Gateway $gateway */
-        $gateway = Omnipay::create($this->getGatewayClassName());
-        $gateway->setUsername(Craft::parseEnv($this->username));
-        $gateway->setPassword(Craft::parseEnv($this->password));
-        
+        $gateway = $this->getGateway();
+        $gateway->setTestMode($this->testMode);
+
         $event = new CreateGatewayEvent([
             'gateway' => $gateway
         ]);
 
         // Raise 'beforeCreateGateway' event
         $this->trigger(self::EVENT_BEFORE_CREATE_GATEWAY, $event);
-        
+
         return $event->gateway;
+    }
+
+    protected function getGateway()
+    {
+        $gatewayName = '\\'.PxPayGateway::class;
+        $username = Craft::parseEnv($this->username);
+        $password = Craft::parseEnv($this->password);
+
+        // swap the gateway to PxPost if running a refund
+        $actionSegments = Craft::$app->getRequest()->actionSegments;
+        $action = array_pop($actionSegments);
+        if ($action === 'transaction-refund') {
+            $gatewayName = '\\'.PxPostGateway::class;
+            $username = Craft::parseEnv($this->pxPostUsername);
+            $password = Craft::parseEnv($this->pxPostPassword);
+        }
+
+        $gateway = Omnipay::create($gatewayName);
+        $gateway->setUsername($username);
+        $gateway->setPassword($password);
+
+        return $gateway;
     }
 
     /**
      * @inheritdoc
      */
-    protected function getGatewayClassName(): ?string
+    protected function getGatewayClassName()
     {
-        return '\\'.Gateway::class;
+        // swap the gateway to PxPost if running a refund
+        $requestBody = Craft::$app->getRequest()->bodyParams;
+        if (isset($requestBody['action']) && strpos($requestBody['action'], 'transaction-refund')) {
+            return '\\'.PxPostGateway::class;
+        }
+
+        return '\\'.PxPayGateway::class;
     }
 
     /**
@@ -114,7 +156,7 @@ class PxPay extends OffsiteGateway
     protected function createPaymentRequest(Transaction $transaction, $card = null, $itemBag = null): array
     {
         $request = parent::createPaymentRequest($transaction, $card, $itemBag);
-        
+
         if(strlen($transaction->hash) > 16) {
             $shortenedHash = substr($transaction->hash, 0, 16);
         } else {
@@ -122,15 +164,10 @@ class PxPay extends OffsiteGateway
         }
 
         $request['transactionId'] = $shortenedHash;
-        $request['testMode'] = $this->testMode ? true : false;
 
         return $request;
 
     }
-    
-        
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -139,6 +176,6 @@ class PxPay extends OffsiteGateway
     {
         return new RequestResponse($response, $transaction);
     }
-    
-    
+
+
 }
