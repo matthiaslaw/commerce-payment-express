@@ -45,14 +45,14 @@
 }) }}
 
 {{ lightswitchField({
-    label: "Test mode?"|t('commerce'),
+    label: "Enable refunds?"|t('commerce'),
     name: 'enableRefunds',
     on: gateway.enableRefunds,
     errors: gateway.getErrors('enableRefunds'),
 }) }}
 
 {{ lightswitchField({
-    label: "Enable refunds?"|t('commerce'),
+    label: "Test mode?"|t('commerce'),
     name: 'testMode',
     instructions: 'If test mode is enabled you can use the test card numbers found <a href="https://www.paymentexpress.com/support-merchant-frequently-asked-questions-testing-details" target="_blank">here</a>',
     on: gateway.testMode,
