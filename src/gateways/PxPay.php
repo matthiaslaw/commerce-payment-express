@@ -93,6 +93,9 @@ class PxPay extends OffsiteGateway
 
     public function supportsRefund(): bool
     {
+        if (is_null($this->enableRefunds)) {
+            return false;
+        }
         return $this->enableRefunds;
     }
 
